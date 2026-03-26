@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cat App</title>
+</head>
+<body>
+
+<h2>Submit a Cat</h2>
+
+<form action="http://localhost:3000/api/submit-cat" method="POST">
+    <label for="catName">Cat Name</label>
+    <input id="catName" name="catName" type="text" required>
+    <button type="submit">Submit</button>
+</form>
+
+<h2>All Cats</h2>
+<button onclick="loadCats()">Load Cats</button>
+
+<ul id="catList"></ul>
+
+<script>
+async function loadCats() {
+    const response = await fetch("http://localhost:3000/api/cats");
+    const cats = await response.json();
+
+    const list = document.getElementById("catList");
+    list.innerHTML = "";
+
+    cats.forEach(cat => {
+        const li = document.createElement("li");
+        li.textContent = cat.name;
+        list.appendChild(li);
+    });
+}
+</script>
+
+</body>
+</html>
