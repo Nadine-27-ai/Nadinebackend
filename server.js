@@ -1,60 +1,42 @@
-const express = require('express');
-const mongoose = require('mongoose');
+const form = document.getElementById("catForm");
 
-const app = express();
-const PORT = 3000;
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-const status = {};
+    const catName = document.getElementById("catName").value;
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+    try {
+        await fetch("http://localhost:3000/api/submit-cat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ catName })
+        });
 
-mongoose.connect("mongodb+srv://NadineM:orise003@cluster0.3cladee.mongodb.net/?appName=Cluster0")
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log(err));
-
-const kittySchema = new mongoose.Schema({
-    name: String
+        alert("Cat saved!");
+        form.reset();
+    } catch (error) {
+        console.error(error);
+        alert("Error saving cat");
+    }
 });
 
-const Kitten = mongoose.model('Kitten', kittySchema);
+async function loadCats() {
+    try {
+        const res = await fetch("http://localhost:3000/api/cats");
+        const cats = await res.json();
 
-app.get("/api/server/status", (req, res) => {
-    status.msg = "Server is up and ready";
-    res.json(status);
-});
+        const list = document.getElementById("catList");
+        list.innerHTML = "";
 
-app.post("/api/submit-cat", async (req, res) => {
-    const kitty = new Kitten({
-        name: req.body.catName
-    });
-
-    await kitty.save();
-
-    console.log(kitty.name);
-
-    res.send("Cat submitted successfully");
-});
-
-app.get("/api/cats", async (req, res) => {
-    const cats = await Kitten.find();
-    res.json(cats);
-});
-
-app.put("/api/cats/:id", async (req, res) => {
-    const updatedCat = await Kitten.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-    );
-    res.json(updatedCat);
-});
-
-app.delete("/api/cats/:id", async (req, res) => {
-    await Kitten.findByIdAndDelete(req.params.id);
-    res.json({ message: "Cat deleted" });
-});
-
-app.listen(PORT, () => {
-    console.log("API is listening on Port:", PORT);
-});
+        cats.forEach(cat => {
+            const li = document.createElement("li");
+            li.textContent = cat.name;
+            list.appendChild(li);
+        });
+    } catch (error) {
+        console.error(error);
+        alert("Error loading cats");
+    }
+}
