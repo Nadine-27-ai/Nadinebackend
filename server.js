@@ -1,42 +1,59 @@
-const form = document.getElementById("catForm");
+const express = require('express');
+const mongoose = require('mongoose');
 
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+const app = express();
 
-    const catName = document.getElementById("catName").value;
+const PORT = process.env.PORT || 3000;
 
-    try {
-        await fetch("http://localhost:3000/api/submit-cat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ catName })
-        });
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-        alert("Cat saved!");
-        form.reset();
-    } catch (error) {
-        console.error(error);
-        alert("Error saving cat");
-    }
+const status = {};
+
+app.get("/api/server/status", (req, res) => {
+    status.msg = "Server is up and ready";
+    res.json(status);
 });
 
-async function loadCats() {
-    try {
-        const res = await fetch("http://localhost:3000/api/cats");
-        const cats = await res.json();
+const kittySchema = new mongoose.Schema({
+    name: String
+});
 
-        const list = document.getElementById("catList");
-        list.innerHTML = "";
+const Kitten = mongoose.model('Kitten', kittySchema);
 
-        cats.forEach(cat => {
-            const li = document.createElement("li");
-            li.textContent = cat.name;
-            list.appendChild(li);
-        });
-    } catch (error) {
-        console.error(error);
-        alert("Error loading cats");
-    }
-}
+app.post("/api/submit-cat", async (req, res) => {
+    const kittenName = req.body.catName;
+
+    const kitty = new Kitten({ name: kittenName });
+    await kitty.save();
+
+    res.send("Cat submitted successfully");
+});
+
+app.get("/api/cats", async (req, res) => {
+    const cats = await Kitten.find();
+    res.json(cats);
+});
+
+app.put("/api/cats/:id", async (req, res) => {
+    const updated = await Kitten.findByIdAndUpdate(
+        req.params.id,
+        { name: req.body.name },
+        { new: true }
+    );
+    res.json(updated);
+});
+
+app.delete("/api/cats/:id", async (req, res) => {
+    await Kitten.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+});
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+    console.log("MongoDB connected");
+    app.listen(PORT, () => {
+        console.log("API is listening on Port:", PORT);
+    });
+})
+.catch(err => console.log(err));
