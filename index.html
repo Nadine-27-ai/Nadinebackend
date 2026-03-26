@@ -1,24 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Cat App</title>
+    <title>Cat Photo App</title>
 </head>
 <body>
 
-<h1>Cat Photo App + Database</h1>
+<h1>Cat Photo App</h1>
 
-<h2>Add a Cat</h2>
-<form id="catForm">
-    <input type="text" id="catName" placeholder="Enter cat name" required>
+<h2>Submit a Cat</h2>
+<form action="/api/submit-cat" method="POST">
+    <input type="text" name="catName" placeholder="Enter cat name" required>
     <button type="submit">Submit</button>
 </form>
 
-<h2>Saved Cats</h2>
+<h2>All Cats</h2>
 <button onclick="loadCats()">Load Cats</button>
 
 <ul id="catList"></ul>
 
-<script src="index.js"></script>
+<script>
+async function loadCats() {
+    const response = await fetch("/api/cats");
+    const cats = await response.json();
+
+    const list = document.getElementById("catList");
+    list.innerHTML = "";
+
+    cats.forEach(cat => {
+        const li = document.createElement("li");
+        li.textContent = cat.name;
+        list.appendChild(li);
+    });
+}
+</script>
+
+<hr>
+
+<h2>Cat Photos (Teacher Style Section)</h2>
+
+<p>Click here to view more <a href="https://www.freecatphotoapp.com">cat photos</a>.</p>
+
+<img src="https://cdn.freecodecamp.org/curriculum/cat-photo-app/relaxing-cat.jpg" alt="A cute cat">
+
+<h3>Things cats love:</h3>
+<ul>
+    <li>Cat nip</li>
+    <li>Laser pointers</li>
+    <li>Lasagna</li>
+</ul>
+
+<h3>Things cats hate:</h3>
+<ol>
+    <li>Water</li>
+    <li>Dogs</li>
+    <li>Vet visits</li>
+</ol>
 
 </body>
 </html>
