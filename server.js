@@ -3,13 +3,16 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const status = {};
+
+app.get("/", (req, res) => {
+    res.send("Cat API is running");
+});
 
 app.get("/api/server/status", (req, res) => {
     status.msg = "Server is up and ready";
